@@ -7,13 +7,11 @@
    [http.async.client.request :as req]
    [http.async.client :as ac]
    [clojure.string :as string])
-  (:import (com.ning.http.client Cookie
-                                 FluentCaseInsensitiveStringsMap
-				 PerRequestConfig
-                                 Request
-                                 RequestBuilder)
-           (com.ning.http.multipart StringPart
-                                    FilePart)
+  (:import (org.asynchttpclient.cookie Cookie)
+           (org.asynchttpclient Request
+                                RequestBuilder)
+           (org.asynchttpclient.request.body.multipart StringPart
+                                                       FilePart)
            (java.io File InputStream)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -72,14 +70,15 @@
   (doseq [{:keys [domain
                   name
                   value
+                  wrap
                   path
                   max-age
-                  secure]
+                  secure
+                  http-only]
            :or {path "/"
                 max-age 30
                 secure false}} cookies]
-    (.addCookie rb (Cookie. domain name value path max-age secure))))
-
+    (.addCookie rb (Cookie. name value wrap domain path max-age secure http-only))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- add-query-parameters
@@ -140,7 +139,7 @@
   "sets the timeout for the request"
   [rb timeout]
   
-  (let [prc (PerRequestConfig.)]
+  (let [prc (RequestBuilder.)]
     (.setRequestTimeoutInMs prc timeout)
     (.setPerRequestConfig rb prc)))
 
